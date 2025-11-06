@@ -224,21 +224,56 @@ poetry run black . && poetry run isort . && poetry run pylint apps/ core/
 
 ## 📝 GraphQL Schema Example
 
-The template includes example queries and mutations:
+The template includes working examples using Django ORM with the `ExampleModel`:
 
+### Queries
 ```graphql
-# Query example
+# Simple greeting
 query {
   hello(name: "World")
+}
+
+# Get all examples from database
+query {
   examples {
     id
     name
     description
     isActive
+    createdAt
+    updatedAt
   }
 }
 
-# Mutation example
+# Filter active examples
+query {
+  examples(isActive: true) {
+    id
+    name
+  }
+}
+
+# Get single example by ID
+query {
+  example(id: "1") {
+    id
+    name
+    description
+  }
+}
+
+# Search examples by name
+query {
+  searchExamples(name: "test") {
+    id
+    name
+  }
+}
+```
+
+### Mutations
+```graphql
+# Create new example
 mutation {
   createExample(input: {
     name: "New Example"
@@ -247,7 +282,26 @@ mutation {
   }) {
     id
     name
+    createdAt
   }
+}
+
+# Update existing example
+mutation {
+  updateExample(id: "1", input: {
+    name: "Updated Example"
+    description: "Updated description"
+    isActive: false
+  }) {
+    id
+    name
+    updatedAt
+  }
+}
+
+# Delete example
+mutation {
+  deleteExample(id: "1")
 }
 ```
 

@@ -1,6 +1,7 @@
 import strawberry
 from typing import List, Optional
 from .types import ExampleType
+from apps.api.models import ExampleModel
 
 
 @strawberry.type
@@ -18,31 +19,29 @@ class Query:
         return "Hello, World!"
     
     @strawberry.field
-    def examples(self) -> List[ExampleType]:
-        """Example query that returns a list of items"""
-        # Replace with actual database queries
-        return [
-            ExampleType(
-                id=strawberry.ID("1"),
-                name="Example 1",
-                description="This is an example",
-                is_active=True
-            ),
-            ExampleType(
-                id=strawberry.ID("2"),
-                name="Example 2",
-                description="Another example",
-                is_active=True
-            ),
-        ]
+    def examples(self, is_active: Optional[bool] = None) -> List[ExampleType]:
+        """
+        Query all examples from the database
+        Optionally filter by is_active status
+        """
+        queryset = ExampleModel.objects.all()
+        
+        if is_active is not None:
+            queryset = queryset.filter(is_active=is_active)
+        
+        return [ExampleType.from_model(obj) for obj in queryset]
     
     @strawberry.field
     def example(self, id: strawberry.ID) -> Optional[ExampleType]:
-        """Example query that returns a single item by ID"""
-        # Replace with actual database query
-        return ExampleType(
-            id=id,
-            name=f"Example {id}",
-            description="This is an example",
-            is_active=True
-        )
+        """Query a single example by ID from the database"""
+        try:
+            obj = ExampleModel.objects.get(id=int(id))
+            return ExampleType.from_model(obj)
+        except ExampleModel.DoesNotExist:
+            return None
+    
+    @strawberry.field
+    def search_examples(self, name: str) -> List[ExampleType]:
+        """Search examples by name (case-insensitive contains)"""
+        queryset = ExampleModel.objects.filter(name__icontains=name)
+        return [ExampleType.from_model(obj) for obj in queryset]

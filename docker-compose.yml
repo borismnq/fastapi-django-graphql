@@ -28,7 +28,23 @@ services:
       - DATABASE_URL=postgresql://postgres:postgres@db:5432/mydb
       - DEBUG=True
       - SECRET_KEY=django-insecure-change-this-in-production
-      - ALLOWED_HOSTS=localhost,127.0.0.1,web
+      - ALLOWED_HOSTS=localhost,127.0.0.1,web,django
+    depends_on:
+      db:
+        condition: service_healthy
+
+  django:
+    build: .
+    command: /run-django.sh
+    volumes:
+      - .:/app
+    ports:
+      - "8001:8000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/mydb
+      - DEBUG=True
+      - SECRET_KEY=django-insecure-change-this-in-production
+      - ALLOWED_HOSTS=localhost,127.0.0.1,web,django
     depends_on:
       db:
         condition: service_healthy
